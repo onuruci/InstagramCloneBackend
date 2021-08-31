@@ -275,9 +275,10 @@ router.get('/myprofile', verifyToken, (req, res) => {
     if(err) {res.sendStatus(403)}
     else {
       var user = await UserModel.findById(authData.user._id).populate('posts');
-
       res.json({
         user: user,
+        authData: authData,
+        err: 0
       });
     }
   })
