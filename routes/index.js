@@ -335,7 +335,7 @@ router.post('/follow/:userid', verifyToken, (req,res) => {
       _id : authData.user._id,
       'following' : {$ne: req.params.userid}
     }
-    var updateFollower = await UserModel.findByIdAndUpdate(conditions, req.params.userid, {$push : {followers : authData.user._id}});
+    var updateFollower = await UserModel.findByIdAndUpdate(req.params.userid, {$push : {followers : authData.user._id}}, {new: true});
     var updateFollowing = await UserModel.findByIdAndUpdate(conditionsFollowing, authData.user._id, {$push: {following: req.params.userid}});
     res.json({
       updateFollower: updateFollower,
@@ -360,6 +360,18 @@ router.post('/addprofile', upload.single('profilephoto'), verifyToken,(req, res)
       })
     })
   })
+});
+
+router.get('/homepage', verifyToken, (req, res) => {
+  jwt.verify(req.token, process.env.SECRET_KEY, async (err, authData) => {
+    if(err){
+      console.log(err);
+      res.sendStatus(403);
+    }
+    var user = await UserModel.findById(authData.user._id);
+    console.log(user);
+    res.json(user);
+  });
 });
 
 
