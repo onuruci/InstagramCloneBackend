@@ -327,20 +327,21 @@ router.post('/postdetail/:postid', verifyToken, (req, res) => {
 router.post('/follow/:userid', verifyToken, (req,res) => {
   jwt.verify(req.token, process.env.SECRET_KEY, async (err, authData) => {
     if(err) {res.sendStatus(403)}
-    var conditions = {
-      _id : req.params.userid,
-      'followers' : {$ne : authData.user._id}
+    var user = await UserModel.findById(req.params.userid);
+    if(!user.followers.includes(authData.user._id))
+    {
+      var updateFollower = await UserModel.findByIdAndUpdate(req.params.userid, {$push : {followers : authData.user._id}}, {new: true});
+      var updateFollowing = await UserModel.findByIdAndUpdate(authData.user._id, {$push: {following: req.params.userid}}, {new: true});
+      res.json({
+        updateFollower: updateFollower,
+        updateFollowing: updateFollowing
+      })
     }
-    var conditionsFollowing = {
-      _id : authData.user._id,
-      'following' : {$ne: req.params.userid}
+    else {
+      res.json({
+        message: "Already Following"
+      })
     }
-    var updateFollower = await UserModel.findByIdAndUpdate(req.params.userid, {$push : {followers : authData.user._id}}, {new: true});
-    var updateFollowing = await UserModel.findByIdAndUpdate(conditionsFollowing, authData.user._id, {$push: {following: req.params.userid}});
-    res.json({
-      updateFollower: updateFollower,
-      updateFollowing: updateFollowing
-    })
   })
 });
 
