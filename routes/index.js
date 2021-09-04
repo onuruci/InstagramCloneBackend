@@ -369,9 +369,26 @@ router.get('/homepage', verifyToken, (req, res) => {
       console.log(err);
       res.sendStatus(403);
     }
-    var user = await UserModel.findById(authData.user._id);
-    console.log(user);
-    res.json(user);
+    var user = await UserModel.findById(authData.user._id).populate({path: 'following', populate: {path : 'posts'}});
+    var arr = [];
+    user.following.forEach(element => {
+      arr = [...arr, ...element.posts];
+    });
+    arr.sort((a, b) => {
+      if(a.created_at < b.created_at){
+        return 1;
+      }
+      else {
+        return -1;
+      }
+    });
+    res.json({
+      user: user,
+      message: 'Succesfull',
+      arr: arr,
+      authData: authData,
+      error: 0
+    });
   });
 });
 
