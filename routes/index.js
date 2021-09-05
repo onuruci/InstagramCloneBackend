@@ -369,7 +369,7 @@ router.get('/homepage', verifyToken, (req, res) => {
       console.log(err);
       res.sendStatus(403);
     }
-    var user = await UserModel.findById(authData.user._id).populate({path: 'following', populate: {path : 'posts'}});
+    var user = await UserModel.findById(authData.user._id).populate({path: 'following', populate: {path : 'posts', populate: {path: 'owner'}}});
     var arr = [];
     user.following.forEach(element => {
       arr = [...arr, ...element.posts];
