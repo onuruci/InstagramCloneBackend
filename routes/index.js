@@ -310,6 +310,50 @@ router.post('/addcomment/:postid', verifyToken, [
   }
 ]);
 
+router.post('/likepost/:postid', verifyToken, (req, res) => {
+  console.log("AAAA");
+  jwt.verify(req.token, process.env.SECRET_KEY, async (err, authData) => {
+    console.log(authData);
+    if(err) {
+      console.log('ERR');
+      res.sendStatus(403)}
+    else {
+      console.log('Entered');
+      PostModel.findById(req.params.postid, async (err, doc) => {
+        if(err) {
+          res.json({
+            err: 1,
+            success: 0,
+            authData: authData
+          })
+        }
+
+        if(doc.likedOnes.includes(authData.user._id)){
+          res.json({
+            post: doc,
+            err: 0,
+            success: 1,
+            authData: authData
+          });
+        }
+        else {
+          let likeCount = (doc.likes+1);
+          console.log(likeCount);
+          doc.likes = likeCount;
+          doc.likedOnes.push(authData.user._id);
+          var updated_post = await doc.save();
+          res.json({
+            post: updated_post,
+            err: 0,
+            success: 1,
+            authData: authData
+          });
+        }
+      });
+    }
+  });
+});
+
 router.post('/postdetail/:postid', verifyToken, (req, res) => {
   jwt.verify(req.token, process.env.SECRET_KEY, async (err, authData) => {
     if(err) {res.sendStatus(403)}

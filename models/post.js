@@ -7,6 +7,7 @@ var PostSchema = new Schema(
         paragraph: {type: String, default: ""},
         photo: {type:String, default:""},
         likes: {type: Number, default: 0},
+        likedOnes: {type: [Schema.Types.ObjectId], ref: 'User'},
         comments : {type: [Schema.Types.ObjectId], ref: 'Comment'},
         owner: {type: Schema.Types.ObjectId, ref: 'User'}
     },
