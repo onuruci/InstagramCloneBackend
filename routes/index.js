@@ -295,6 +295,7 @@ router.post('/addcomment/:postid', verifyToken, [
           photo: req.params.postid,
           user : authData.user._id
         });
+        console.log(new_comment);
         new_comment.save(async (err) => {
           if(err) {res.sendStatus(403)}
           var added_comment = await PostModel.findByIdAndUpdate(req.params.postid, {$push: {comments: new_comment}});
@@ -413,7 +414,12 @@ router.get('/homepage', verifyToken, (req, res) => {
       console.log(err);
       res.sendStatus(403);
     }
-    var user = await UserModel.findById(authData.user._id).populate({path: 'following', populate: {path : 'posts', populate: {path: 'owner'}}});
+    var user = await UserModel.findById(authData.user._id).populate({
+      path: 'following', 
+      populate: {path : 'posts', 
+                      populate: [{path: 'comments'}, {path: 'owner'}
+                      ]}
+          });
     var arr = [];
     user.following.forEach(element => {
       arr = [...arr, ...element.posts];
