@@ -293,16 +293,17 @@ router.post('/addcomment/:postid', verifyToken, [
         var new_comment = new CommentModel({
           paragraph: req.body.paragraph,
           photo: req.params.postid,
-          user : authData.user._id
+          owner : authData.user._id
         });
         console.log(new_comment);
         new_comment.save(async (err) => {
           if(err) {res.sendStatus(403)}
           var added_comment = await PostModel.findByIdAndUpdate(req.params.postid, {$push: {comments: new_comment}});
           var updatedPost = await PostModel.findById(req.params.postid);
+          var n_comment = await CommentModel.findById(new_comment._id).populate('owner');
           res.json({
             post: updatedPost,
-            comment: new_comment
+            comment: n_comment
           });
         }); 
       }
@@ -417,7 +418,7 @@ router.get('/homepage', verifyToken, (req, res) => {
     var user = await UserModel.findById(authData.user._id).populate({
       path: 'following', 
       populate: {path : 'posts', 
-                      populate: [{path: 'comments'}, {path: 'owner'}
+                      populate: [{path: 'comments', populate: {path: 'owner'}}, {path: 'owner'}
                       ]}
           });
     var arr = [];
