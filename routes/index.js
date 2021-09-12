@@ -443,6 +443,25 @@ router.get('/homepage', verifyToken, (req, res) => {
   });
 });
 
+router.post('/searchbar', verifyToken, [
+  body('search', 'Paragraph can not be empty').trim().isLength({min : 1}).escape(),
+  (req, res) => {
+    jwt.verify(req.token, process.env.SECRET_KEY, async (err, authData) => {
+      if(err) {
+        res.sendStatus(403);
+      }
+      var users = await UserModel.find({ "username": { $regex: req.body.search, $options: "i" } });
+      let sliced = users.slice(0,4);
+      res.json({
+        users: sliced,
+        err: 0,
+        success: 1,
+        authData: authData
+      });
+    });
+  }
+]);
+
 
 
 module.exports = router;
