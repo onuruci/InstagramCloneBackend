@@ -391,6 +391,65 @@ router.post('/follow/:userid', verifyToken, (req,res) => {
   })
 });
 
+router.post('/unfollow/:userid', verifyToken, (req,res) => {
+  jwt.verify(req.token, process.env.SECRET_KEY, async (err, authData) => {
+    if(err) {res.sendStatus(403)}
+    var user = await UserModel.findById(req.params.userid);
+    if(user.followers.includes(authData.user._id))
+    {
+      UserModel.findById(req.params.userid, async (err, doc) => {
+        if(err) {
+          res.json({
+            err: 1,
+            success: 0,
+            authData: authData
+          })
+        }
+
+        let index = doc.followers.indexOf(authData.user._id);
+
+        if(index > -1){
+          doc.followers.splice(index, 1);
+        }
+
+        var update = await doc.save();
+
+      }).then(() => {
+        UserModel.findById(authData.user._id, async (err, doc) => {
+          if(err) {
+            res.json({
+              err: 1,
+              success: 0,
+              authData: authData
+            })
+          }
+  
+          let index = doc.following.indexOf(req.params.userid);
+  
+          if(index > -1){
+            doc.following.splice(index, 1);
+          }
+  
+          var updated = await doc.save();
+
+          res.json({
+            updated: updated,
+            err: 0,
+            success: 1
+          });
+  
+        })
+      });
+    }
+    else {
+      res.json({
+        message: "Not Following",
+        authData: authData
+      })
+    }
+  })
+});
+
 router.post('/addprofile', upload.single('profilephoto'), verifyToken,(req, res) => {
   jwt.verify(req.token, process.env.SECRET_KEY, async (err, authData) => {
     console.log('aut  !!!===', authData);
