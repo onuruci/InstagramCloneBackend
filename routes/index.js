@@ -463,5 +463,20 @@ router.post('/searchbar', verifyToken, [
 ]);
 
 
+router.get('/getlikes/:postid', verifyToken, (req, res) => {
+  jwt.verify(req.token, process.env.SECRET_KEY, async (err, authData) => {
+    if(err) {
+      res.sendStatus(403);
+    }
+    var post = await PostModel.findById(req.params.postid).populate('likedOnes');
+    res.json({
+      post: post,
+      err : 0,
+      success: 1,
+      authData: authData
+    });
+  });
+});
+
 
 module.exports = router;
