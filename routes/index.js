@@ -356,15 +356,16 @@ router.post('/likepost/:postid', verifyToken, (req, res) => {
   });
 });
 
-router.post('/postdetail/:postid', verifyToken, (req, res) => {
+router.get('/postdetail/:postid', verifyToken, (req, res) => {
   jwt.verify(req.token, process.env.SECRET_KEY, async (err, authData) => {
     if(err) {res.sendStatus(403)}
     else {
-      var post = await PostModel.findById(req.params.postid).populate('comments');
+      var post = await PostModel.findById(req.params.postid).populate({path: 'comments', populate:{ path: 'owner'}});
       var user = await UserModel.findById(authData.user._id);
       res.json({
         post: post,
-        user: user
+        user: user,
+        authData: authData
       })
     }
   })
